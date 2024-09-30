@@ -1,6 +1,6 @@
 {
   "name": "trainkore",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "SDK for Trainkore AI platform",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -13,6 +13,10 @@
     "nodemon": "^2.0.0",
     "ts-node": "^10.0.0",
     "typescript": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/anuragvishwa/trainkore-sdk"
   },
   "dependencies": {
     "axios": "^0.21.1",
