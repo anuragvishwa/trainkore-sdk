@@ -94,10 +94,6 @@ Once you have the JWT token, you can create a chat prompt by calling the `create
             '3': { value: 'human', label: 'user' }
           }
         },
-        prevOutput: {},
-        tools: { tools: [], toolsData: {} },
-        getStocksPrice: { getStocksPrice: [] },
-        scheduleMeeting: { scheduleMeeting: [] },
         parametersValue: {
           stopSliderValue: 50,
           topP: 0.1,
@@ -106,9 +102,7 @@ Once you have the JWT token, you can create a chat prompt by calling the `create
           frequency_penalty: 0.1,
           presence_penalty: 0.1,
           model: { value: 'custom_model', label: 'custom_model' }
-        },
-        commitMessage: 'byk',
-        cards: { cards: [{ id: 1 }, { id: 2 }] }        
+        }      
       }, token);
       
       console.log('Chat Prompt Created:', chatPrompt);
