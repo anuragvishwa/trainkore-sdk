@@ -1,17 +1,17 @@
+import Trainkore from './index';  // Import the main Trainkore class
 import axios from 'axios';
 
 export class TrainkoreChatPrompt {
-  private apiUrl: string;
+  private trainkore: Trainkore;  // Reference to the Trainkore class
 
-  constructor(apiUrl: string) {
-    this.apiUrl = apiUrl;
+  constructor(trainkore: Trainkore) {
+    this.trainkore = trainkore;
   }
 
-  // Method to create a chat completion, using the JWT token for authentication
+  // Method to create a chat completion
   async create(data: {
     projId: string;
     versionId: string;
-    topic: string;
     userId: string;
     userInput: {
       userInput: { [key: string]: string };
@@ -20,20 +20,8 @@ export class TrainkoreChatPrompt {
       imageCards: { [key: string]: any };
     };
     userInputData: {
-      promptCards: Array<{ id: number }>;
       userInputData: { [key: string]: string };
       selectedOptionsData: { [key: string]: { value: string; label: string } };
-    };
-    prevOutput: object;
-    tools: {
-      tools: Array<any>;
-      toolsData: object;
-    };
-    getStocksPrice: {
-      getStocksPrice: Array<any>;
-    };
-    scheduleMeeting: {
-      scheduleMeeting: Array<any>;
     };
     parametersValue: {
       stopSliderValue: number;
@@ -42,74 +30,55 @@ export class TrainkoreChatPrompt {
       max_tokens: number;
       frequency_penalty: number;
       presence_penalty: number;
-      model: {
-        value: string;
-        label: string;
-      };
+      model: { value: string; label: string };
     };
-    commitMessage: string;
-    cards: {
-      cards: Array<{ id: number }>;
-    };
-    newTool: {
-      newTools: Array<{ id: number }>;
-      newToolData: { [key: string]: string };
-    };
-  }, token: string) {
+  }) {
     try {
-      const response = await axios.post(`${this.apiUrl}/chatPrompt`, data, {
+      const token = await this.trainkore.getToken();  // Ensure token is retrieved
+      const response = await axios.post(`${this.trainkore.apiUrl}/chatPrompt`, data, {
         headers: {
-          Authorization: `Bearer ${token}`,  // Use the JWT token
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
-      return response.data;
+      return response.data;  // Return the successful response
     } catch (error: any) {
-      if (error.response) {
-        console.error('Error response from server:', {
-          status: error.response.status,
-          data: error.response.data,
-          headers: error.response.headers,
-        });
-        throw new Error(
-          `Failed to create chat prompt: ${error.response.status} - ${error.response.data.message || error.response.statusText}`
-        );
-      } else if (error.request) {
-        console.error('No response received:', error.request);
-        throw new Error('Failed to create chat prompt: No response received from server');
-      } else {
-        console.error('Error setting up request:', error.message);
-        throw new Error(`Failed to create chat prompt: ${error.message}`);
-      }
+      this.handleRequestError(error, 'create chat prompt');
     }
   }
 
-  // Method to retrieve a chat prompt by ID using the JWT token
-  async retrieve(chatId: string, token: string) {
+  // Method to fetch a chat prompt by ID
+  async getChatPromptById(chatId: string) {
     try {
-      const response = await axios.get(`${this.apiUrl}/chatPrompt/${chatId}`, {
+      const token = await this.trainkore.getToken();  // Ensure token is retrieved
+      const response = await axios.get(`${this.trainkore.apiUrl}/chatPrompt/${chatId}`, {
         headers: {
-          Authorization: `Bearer ${token}`,  // Use the JWT token for authorization
+          Authorization: `Bearer ${token}`,
         },
       });
-      return response.data;
+      return response.data;  // Return the fetched chat prompt
     } catch (error: any) {
-      if (error.response) {
-        console.error('Error response from server:', {
-          status: error.response.status,
-          data: error.response.data,
-          headers: error.response.headers,
-        });
-        throw new Error(
-          `Failed to retrieve chat prompt: ${error.response.status} - ${error.response.data.message || error.response.statusText}`
-        );
-      } else if (error.request) {
-        console.error('No response received:', error.request);
-        throw new Error('Failed to retrieve chat prompt: No response received from server');
-      } else {
-        console.error('Error setting up request:', error.message);
-        throw new Error(`Failed to retrieve chat prompt: ${error.message}`);
-      }
+      this.handleRequestError(error, 'fetch chat prompt by ID');
+    }
+  }
+
+  // Helper function to handle request errors
+  private handleRequestError(error: any, operation: string) {
+    if (error.response) {
+      console.error(`Error response from server while trying to ${operation}:`, {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+      throw new Error(
+        `Failed to ${operation}: ${error.response.status} - ${error.response.data.message || error.response.statusText}`
+      );
+    } else if (error.request) {
+      console.error(`No response received from server while trying to ${operation}:`, error.request);
+      throw new Error(`Failed to ${operation}: No response received from server`);
+    } else {
+      console.error(`Error setting up request while trying to ${operation}:`, error.message);
+      throw new Error(`Failed to ${operation}: ${error.message}`);
     }
   }
 }

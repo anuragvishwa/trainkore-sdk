@@ -1,63 +1,60 @@
+import Trainkore from './index';  // Import the main Trainkore class
 import axios from 'axios';
 
 export class TrainkoreLog {
-  private apiUrl: string;
+  private trainkore: Trainkore;  // Reference to the Trainkore class
 
-  constructor(apiUrl: string) {
-    this.apiUrl = apiUrl;
+  constructor(trainkore: Trainkore) {
+    this.trainkore = trainkore;
   }
 
-  // Get logs by project ID, using the JWT token for authentication
-  async getLogsByProjectId(projId: string, token: string) {
+  // Method to get logs by project ID
+  async getLogsByProjectId(projId: string) {
     try {
-      const response = await axios.get(`${this.apiUrl}/logs/${projId}`, {
-        headers: { Authorization: `Bearer ${token}` },  // Use JWT token for authentication
+      const token = await this.trainkore.getToken();  // Ensure token is retrieved
+      const response = await axios.get(`${this.trainkore.apiUrl}/logs/${projId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      return response.data;
+      return response.data;  // Return the successful response
     } catch (error: any) {
-      if (error.response) {
-        console.error('Error response from server:', {
-          status: error.response.status,
-          data: error.response.data,
-          headers: error.response.headers,
-        });
-        throw new Error(
-          `Failed to fetch logs: ${error.response.status} - ${error.response.data.message || error.response.statusText}`
-        );
-      } else if (error.request) {
-        console.error('No response received:', error.request);
-        throw new Error('Failed to fetch logs: No response received from server');
-      } else {
-        console.error('Error setting up request:', error.message);
-        throw new Error(`Failed to fetch logs: ${error.message}`);
-      }
+      this.handleError(error, 'fetch logs');
     }
   }
 
-  // Get a log by log ID, using the JWT token for authentication
-  async getLogByLogId(logId: string, token: string) {
+  // Method to get a log by log ID
+  async getLogByLogId(logId: string) {
     try {
-      const response = await axios.get(`${this.apiUrl}/log/${logId}`, {
-        headers: { Authorization: `Bearer ${token}` },  // Use JWT token for authentication
+      const token = await this.trainkore.getToken();  // Ensure token is retrieved
+      const response = await axios.get(`${this.trainkore.apiUrl}/log/${logId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
-      return response.data;
+      return response.data;  // Return the successful response
     } catch (error: any) {
-      if (error.response) {
-        console.error('Error response from server:', {
-          status: error.response.status,
-          data: error.response.data,
-          headers: error.response.headers,
-        });
-        throw new Error(
-          `Failed to fetch log: ${error.response.status} - ${error.response.data.message || error.response.statusText}`
-        );
-      } else if (error.request) {
-        console.error('No response received:', error.request);
-        throw new Error('Failed to fetch log: No response received from server');
-      } else {
-        console.error('Error setting up request:', error.message);
-        throw new Error(`Failed to fetch log: ${error.message}`);
-      }
+      this.handleError(error, 'fetch log');
+    }
+  }
+
+  // Centralized error handler for logs
+  private handleError(error: any, action: string) {
+    if (error.response) {
+      console.error(`Error response from server while trying to ${action}:`, {
+        status: error.response.status,
+        data: error.response.data,
+        headers: error.response.headers,
+      });
+      throw new Error(
+        `Failed to ${action}: ${error.response.status} - ${error.response.data.message || error.response.statusText}`
+      );
+    } else if (error.request) {
+      console.error(`No response received while trying to ${action}:`, error.request);
+      throw new Error(`Failed to ${action}: No response received from server`);
+    } else {
+      console.error(`Error setting up request while trying to ${action}:`, error.message);
+      throw new Error(`Failed to ${action}: ${error.message}`);
     }
   }
 }

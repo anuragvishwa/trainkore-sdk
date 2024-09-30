@@ -1,39 +1,31 @@
 import axios from 'axios';
-import { TrainkoreAuth } from './auth';
-import { TrainkoreChatPrompt } from './chatPrompt';
-import { TrainkoreLog } from './log';
+import { TrainkoreAuth } from './auth.js';  // Check exports in './auth.ts'
+import { TrainkoreChatPrompt } from './chatPrompt.js';  // Check exports in './chatPrompt.ts'
+import { TrainkoreLog } from './log.js';  // Check exports in './log.ts'
 
 export default class Trainkore {
   public auth: TrainkoreAuth;
-
   public chatPrompt: TrainkoreChatPrompt;
   public log: TrainkoreLog;
-  private jwtToken: string | null = null;  // Store the JWT token here
+  private jwtToken: string | null = null;
+  protected static defaultApiUrl = 'https://traincore.visualith.com/api';
+  protected loginPromise: Promise<void> | null = null;
+  public apiUrl: string;
 
-  // Define the 'chat' object with 'completions' as a nested object
-  public chat: { completions: TrainkoreChatPrompt };
-
-  constructor(private apiKey: string, private apiUrl: string = 'https://traincore.visualith.com/api') {
-    // Initialize instances with the API key and URL
-    this.auth = new TrainkoreAuth(apiKey, apiUrl);
-    this.chatPrompt = new TrainkoreChatPrompt(apiUrl);  // Pass only apiUrl, no need for apiKey directly now
-    this.log = new TrainkoreLog(apiUrl);
-
-    // Initialize the 'chat' property with 'completions' pointing to the chatPrompt instance
-    this.chat = {
-      completions: this.chatPrompt,
-    };
+  constructor(private apiKey: string, apiUrl: string = Trainkore.defaultApiUrl) {
+    this.apiUrl = apiUrl;
+    this.auth = new TrainkoreAuth(apiKey, this.apiUrl);
+    this.chatPrompt = new TrainkoreChatPrompt(this);
+    this.log = new TrainkoreLog(this);
+    this.loginPromise = this.autoLogin();
   }
 
-  // Method to login and retrieve JWT token
-  async login(): Promise<void> {
+  // Automatically log in and store the token
+  protected async autoLogin(): Promise<void> {
     try {
-      const response = await axios.post(`${this.apiUrl}/login`, {
-        apiKey: this.apiKey
-      });
-
+      const response = await axios.post(`${this.apiUrl}/login`, { apiKey: this.apiKey });
       if (response.data.token) {
-        this.jwtToken = response.data.token;  // Store the JWT token
+        this.jwtToken = response.data.token;
         console.log('Login successful, token obtained');
       } else {
         throw new Error('Login failed, no token received');
@@ -44,8 +36,17 @@ export default class Trainkore {
     }
   }
 
-  // Get JWT token
-  getToken(): string | null {
+  // Method to get the token, ensuring login completion before retrieval
+  async getToken(): Promise<string | null> {
+    if (this.jwtToken) {
+      return this.jwtToken;  // Return token if already available
+    }
+
+    // If login is still in progress, wait for it
+    if (this.loginPromise) {
+      await this.loginPromise;
+    }
+
     return this.jwtToken;
   }
 }
