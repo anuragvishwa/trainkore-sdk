@@ -59,6 +59,28 @@ Once the SDK is initialized, you can create a chat prompt by calling the `create
           movie_name: 'My Name is Khan'
         }
       },
+      "userInputData": {
+        "userInputData": {
+          "1" :"Who is lord Ram?",
+          "2" :"Who is Aamir khan?",
+          "3" :"Write python code to get maximum number in an array"
+       
+        },
+        "selectedOptionsData": {
+            "1": {
+                "value": "user",
+                "label": "user"
+            },
+            "2": {
+                "value": "user",
+                "label": "user"
+            },
+            "3": {
+                "value": "human",
+                "label": "user"
+            }
+        }
+    },
       parametersValue: {
         stopSliderValue: 50,
         topP: 0.1,
