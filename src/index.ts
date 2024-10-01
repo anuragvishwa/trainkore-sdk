@@ -1,30 +1,23 @@
 import axios from 'axios';
-import { TrainkoreChatPrompt } from './chatPrompt';  // Check exports in './chatPrompt.ts'
-import { TrainkoreLog } from './log';  // Check exports in './log.ts'
+// import { TrainkoreAuth } from './auth.js';  // Check exports in './auth.ts'
+import { TrainkoreChatPrompt } from './chatPrompt.js';  // Check exports in './chatPrompt.ts'
+import { TrainkoreLog } from './log.js';  // Check exports in './log.ts'
 
 export default class Trainkore {
+  // public auth: TrainkoreAuth;
   public chatPrompt: TrainkoreChatPrompt;
   public log: TrainkoreLog;
   private jwtToken: string | null = null;
   protected static defaultApiUrl = 'https://traincore.visualith.com/api';
   protected loginPromise: Promise<void> | null = null;
   public apiUrl: string;
-  private apiKey: string;
 
-  // Private constructor to prevent direct instantiation
-  private constructor(apiKey: string, apiUrl: string = Trainkore.defaultApiUrl) {
-    this.apiKey = apiKey;
+  constructor(private apiKey: string, apiUrl: string = Trainkore.defaultApiUrl) {
     this.apiUrl = apiUrl;
+    // this.auth = new TrainkoreAuth(apiKey, this.apiUrl);
     this.chatPrompt = new TrainkoreChatPrompt(this);
     this.log = new TrainkoreLog(this);
     this.loginPromise = this.autoLogin();
-  }
-
-  // Static method to create an instance without the constructor
-  public static async createInstance(apiKey: string, apiUrl: string = Trainkore.defaultApiUrl): Promise<Trainkore> {
-    const instance = new Trainkore(apiKey, apiUrl);
-    await instance.loginPromise; // Wait for the login to complete
-    return instance;
   }
 
   // Automatically log in and store the token
@@ -46,7 +39,7 @@ export default class Trainkore {
   // Method to get the token, ensuring login completion before retrieval
   async getToken(): Promise<string | null> {
     if (this.jwtToken) {
-      return this.jwtToken;
+      return this.jwtToken;  // Return token if already available
     }
 
     // If login is still in progress, wait for it
